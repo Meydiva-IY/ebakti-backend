@@ -7,7 +7,7 @@ const dotenv = require('dotenv');
 dotenv.config();
 
 const app = express();
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 
 // Middleware
 app.use(cors());
@@ -27,6 +27,8 @@ const notificationRoutes = require('./routes/notification');
 const groupMemberRoutes = require('./routes/groupMember'); // Import GroupMember routes
 const taskSubmissionRoutes = require('./routes/taskSubmission'); // Import TaskSubmission routes
 const challengeSubmissionRoutes = require('./routes/challengeSubmission'); // Import ChallengeSubmission routes
+const evaluateRoutes = require('./routes/evaluate');
+const certificateRoutes = require('./routes/certificate');
 
 // Use Routes
 app.use('/api/users', userRoutes);
@@ -42,6 +44,8 @@ app.use('/api/notifications', notificationRoutes);
 app.use('/api/groupMembers', groupMemberRoutes); // Use GroupMember routes
 app.use('/api/taskSubmissions', taskSubmissionRoutes); // Use TaskSubmission routes
 app.use('/api/challengeSubmissions', challengeSubmissionRoutes); // Use ChallengeSubmission routes
+app.use('/api/evaluations', evaluateRoutes);
+app.use('/api/certifications', certificateRoutes);
 
 // Start Server
 app.listen(PORT, () => {

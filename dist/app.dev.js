@@ -11,7 +11,7 @@ var dotenv = require('dotenv'); // Load environment variables from .env file
 
 dotenv.config();
 var app = express();
-var PORT = process.env.PORT || 5000; // Middleware
+var PORT = process.env.PORT || 3000; // Middleware
 
 app.use(cors());
 app.use(bodyParser.json()); // Import Routes
@@ -43,7 +43,11 @@ var taskSubmissionRoutes = require('./routes/taskSubmission'); // Import TaskSub
 
 
 var challengeSubmissionRoutes = require('./routes/challengeSubmission'); // Import ChallengeSubmission routes
-// Use Routes
+
+
+var evaluateRoutes = require('./routes/evaluate');
+
+var certificateRoutes = require('./routes/certificate'); // Use Routes
 
 
 app.use('/api/users', userRoutes);
@@ -61,7 +65,9 @@ app.use('/api/groupMembers', groupMemberRoutes); // Use GroupMember routes
 app.use('/api/taskSubmissions', taskSubmissionRoutes); // Use TaskSubmission routes
 
 app.use('/api/challengeSubmissions', challengeSubmissionRoutes); // Use ChallengeSubmission routes
-// Start Server
+
+app.use('/api/evaluations', evaluateRoutes);
+app.use('/api/certifications', certificateRoutes); // Start Server
 
 app.listen(PORT, function () {
   console.log("Server is running on port ".concat(PORT));
