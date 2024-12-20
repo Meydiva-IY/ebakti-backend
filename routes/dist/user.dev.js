@@ -4,59 +4,24 @@ var express = require('express');
 
 var router = express.Router();
 
-var db = require('../config/db'); // Get all users
+var userController = require('../controllers/userController');
+
+var _require = require('../middleware/validate'),
+    validateUser = _require.validateUser,
+    handleValidationErrors = _require.handleValidationErrors;
+
+var _require2 = require('../middleware/auth'),
+    authenticateToken = _require2.authenticateToken;
+
+var logger = require('../middleware/logger'); // Rute untuk user
 
 
-router.get('/', function (req, res) {
-  db.query('SELECT * FROM User', function (err, results) {
-    if (err) throw err;
-    res.json(results);
-  });
-}); // Create a new user
+router.use(logger); // Menggunakan middleware logger untuk semua rute
 
-router.post('/', function (req, res) {
-  var _req$body = req.body,
-      role = _req$body.role,
-      username = _req$body.username,
-      password = _req$body.password,
-      nohp = _req$body.nohp;
-  var sql = 'INSERT INTO User (role, username, password, nohp) VALUES (?, ?, ?, ?)';
-  db.query(sql, [role, username, password, nohp], function (err, result) {
-    if (err) throw err;
-    res.status(201).json({
-      id: result.insertId,
-      role: role,
-      username: username,
-      nohp: nohp
-    });
-  });
-}); // Update a user
-
-router.put('/:id', function (req, res) {
-  var id = req.params.id;
-  var _req$body2 = req.body,
-      role = _req$body2.role,
-      username = _req$body2.username,
-      password = _req$body2.password,
-      nohp = _req$body2.nohp;
-  var sql = 'UPDATE User SET role = ?, username = ?, password = ?, nohp = ? WHERE user_id = ?';
-  db.query(sql, [role, username, password, nohp, id], function (err, result) {
-    if (err) throw err;
-    res.json({
-      message: 'User  updated successfully'
-    });
-  });
-}); // Delete a user
-
-router["delete"]('/:id', function (req, res) {
-  var id = req.params.id;
-  var sql = 'DELETE FROM User WHERE user_id = ?';
-  db.query(sql, [id], function (err, result) {
-    if (err) throw err;
-    res.json({
-      message: 'User  deleted successfully'
-    });
-  });
-});
+router.post('/', validateUser, handleValidationErrors, userController.createUser);
+router.post('/login', userController.loginUser);
+router.get('/', authenticateToken, userController.getAllUsers);
+router.put('/:id', authenticateToken, validateUser, handleValidationErrors, userController.updateUser);
+router["delete"]('/:id', authenticateToken, userController.deleteUser);
 module.exports = router;
 //# sourceMappingURL=user.dev.js.map

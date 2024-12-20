@@ -4,35 +4,51 @@ var express = require('express');
 
 var router = express.Router();
 
-var db = require('../config/db'); // Get all task submissions
+var db = require('../config/db'); // Pastikan Anda mengatur koneksi database di sini
+// Get all task submissions
 
 
 router.get('/', function (req, res) {
-  db.query('SELECT * FROM TaskSubmission', function (err, results) {
-    if (err) throw err;
+  db.query('SELECT * FROM task_submission', function (err, results) {
+    if (err) return res.status(500).json({
+      error: err.message
+    });
     res.json(results);
+  });
+}); // Get a specific task submission by ID
+
+router.get('/:id', function (req, res) {
+  var id = req.params.id;
+  db.query('SELECT * FROM task_submission WHERE submission_id = ?', [id], function (err, results) {
+    if (err) return res.status(500).json({
+      error: err.message
+    });
+    if (results.length === 0) return res.status(404).json({
+      message: 'Submission not found'
+    });
+    res.json(results[0]);
   });
 }); // Create a new task submission
 
 router.post('/', function (req, res) {
   var _req$body = req.body,
       task_id = _req$body.task_id,
-      user_id = _req$body.user_id,
-      score = _req$body.score,
-      taskfile_path = _req$body.taskfile_path,
-      link = _req$body.link,
+      profile_id = _req$body.profile_id,
+      submission_file = _req$body.submission_file,
+      submission_link = _req$body.submission_link,
       feedback = _req$body.feedback,
       status = _req$body.status;
-  var sql = 'INSERT INTO TaskSubmission (task_id, user_id, score, taskfile_path, link, feedback, status) VALUES (?, ?, ?, ?, ?, ?, ?)';
-  db.query(sql, [task_id, user_id, score, taskfile_path, link, feedback, status], function (err, result) {
-    if (err) throw err;
+  var sql = 'INSERT INTO task_submission (task_id, profile_id, submission_file, submission_link, feedback, status) VALUES (?, ?, ?, ?, ?, ?)';
+  db.query(sql, [task_id, profile_id, submission_file, submission_link, feedback, status], function (err, result) {
+    if (err) return res.status(500).json({
+      error: err.message
+    });
     res.status(201).json({
-      id: result.insertId,
+      submission_id: result.insertId,
       task_id: task_id,
-      user_id: user_id,
-      score: score,
-      taskfile_path: taskfile_path,
-      link: link,
+      profile_id: profile_id,
+      submission_file: submission_file,
+      submission_link: submission_link,
       feedback: feedback,
       status: status
     });
@@ -42,29 +58,37 @@ router.post('/', function (req, res) {
 router.put('/:id', function (req, res) {
   var id = req.params.id;
   var _req$body2 = req.body,
-      task_id = _req$body2.task_id,
-      user_id = _req$body2.user_id,
       score = _req$body2.score,
-      taskfile_path = _req$body2.taskfile_path,
-      link = _req$body2.link,
+      submission_file = _req$body2.submission_file,
+      submission_link = _req$body2.submission_link,
       feedback = _req$body2.feedback,
       status = _req$body2.status;
-  var sql = 'UPDATE TaskSubmission SET task_id = ?, user_id = ?, score = ?, taskfile_path = ?, link = ?, feedback = ?, status = ? WHERE submission_id = ?';
-  db.query(sql, [task_id, user_id, score, taskfile_path, link, feedback, status, id], function (err, result) {
-    if (err) throw err;
+  var sql = 'UPDATE task_submission SET score = ?, submission_file = ?, submission_link = ?, feedback = ?, status = ? WHERE submission_id = ?';
+  db.query(sql, [score, submission_file, submission_link, feedback, status, id], function (err, result) {
+    if (err) return res.status(500).json({
+      error: err.message
+    });
+    if (result.affectedRows === 0) return res.status(404).json({
+      message: 'Submission not found'
+    });
     res.json({
-      message: 'Task submission updated successfully'
+      message: 'Submission updated successfully'
     });
   });
 }); // Delete a task submission
 
 router["delete"]('/:id', function (req, res) {
   var id = req.params.id;
-  var sql = 'DELETE FROM TaskSubmission WHERE submission_id = ?';
+  var sql = 'DELETE FROM task_submission WHERE submission_id = ?';
   db.query(sql, [id], function (err, result) {
-    if (err) throw err;
+    if (err) return res.status(500).json({
+      error: err.message
+    });
+    if (result.affectedRows === 0) return res.status(404).json({
+      message: 'Submission not found'
+    });
     res.json({
-      message: 'Task submission deleted successfully'
+      message: 'Submission deleted successfully'
     });
   });
 });

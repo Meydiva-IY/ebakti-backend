@@ -6,6 +6,10 @@ var bodyParser = require('body-parser');
 
 var cors = require('cors');
 
+var dotenv = require('dotenv'); // Load environment variables from .env file
+
+
+dotenv.config();
 var app = express();
 var PORT = process.env.PORT || 5000; // Middleware
 

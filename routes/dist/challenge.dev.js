@@ -4,19 +4,38 @@ var express = require('express');
 
 var router = express.Router();
 
-var db = require('../config/db'); // Get all challenges
+var db = require('../config/db'); // Pastikan Anda mengatur koneksi database di sini
+// Get all challenges
 
 
 router.get('/', function (req, res) {
-  db.query('SELECT * FROM Challenge', function (err, results) {
+  db.query('SELECT * FROM challenge', function (err, results) {
     if (err) {
-      console.error(err);
       return res.status(500).json({
-        message: 'Internal Server Error'
+        error: err.message
       });
     }
 
     res.json(results);
+  });
+}); // Get a specific challenge by ID
+
+router.get('/:id', function (req, res) {
+  var id = req.params.id;
+  db.query('SELECT * FROM challenge WHERE challenge_id = ?', [id], function (err, results) {
+    if (err) {
+      return res.status(500).json({
+        error: err.message
+      });
+    }
+
+    if (results.length === 0) {
+      return res.status(404).json({
+        message: 'Challenge not found'
+      });
+    }
+
+    res.json(results[0]);
   });
 }); // Create a new challenge
 
@@ -25,22 +44,23 @@ router.post('/', function (req, res) {
       title = _req$body.title,
       description = _req$body.description,
       due_date = _req$body.due_date,
-      clg_pic = _req$body.clg_pic;
-  var sql = 'INSERT INTO Challenge (title, description, due_date, clg_pic) VALUES (?, ?, ?, ?)';
-  db.query(sql, [title, description, due_date, clg_pic], function (err, result) {
+      challenge_image = _req$body.challenge_image;
+  var sql = 'INSERT INTO challenge (title, description, due_date, challenge_image) VALUES (?, ?, ?, ?)';
+  db.query(sql, [title, description, due_date, challenge_image], function (err, result) {
     if (err) {
-      console.error(err);
-      return res.status(400).json({
-        message: 'Error creating challenge'
+      return res.status(500).json({
+        error: err.message
       });
     }
 
     res.status(201).json({
-      id: result.insertId,
+      challenge_id: result.insertId,
       title: title,
       description: description,
       due_date: due_date,
-      clg_pic: clg_pic
+      challenge_image: challenge_image,
+      created_at: new Date(),
+      updated_at: new Date()
     });
   });
 }); // Update a challenge
@@ -51,13 +71,12 @@ router.put('/:id', function (req, res) {
       title = _req$body2.title,
       description = _req$body2.description,
       due_date = _req$body2.due_date,
-      clg_pic = _req$body2.clg_pic;
-  var sql = 'UPDATE Challenge SET title = ?, description = ?, due_date = ?, clg_pic = ? WHERE challenge_id = ?';
-  db.query(sql, [title, description, due_date, clg_pic, id], function (err, result) {
+      challenge_image = _req$body2.challenge_image;
+  var sql = 'UPDATE challenge SET title = ?, description = ?, due_date = ?, challenge_image = ?, updated_at = CURRENT_TIMESTAMP WHERE challenge_id = ?';
+  db.query(sql, [title, description, due_date, challenge_image, id], function (err, result) {
     if (err) {
-      console.error(err);
-      return res.status(400).json({
-        message: 'Error updating challenge'
+      return res.status(500).json({
+        error: err.message
       });
     }
 
@@ -75,12 +94,11 @@ router.put('/:id', function (req, res) {
 
 router["delete"]('/:id', function (req, res) {
   var id = req.params.id;
-  var sql = 'DELETE FROM Challenge WHERE challenge_id = ?';
+  var sql = 'DELETE FROM challenge WHERE challenge_id = ?';
   db.query(sql, [id], function (err, result) {
     if (err) {
-      console.error(err);
-      return res.status(400).json({
-        message: 'Error deleting challenge'
+      return res.status(500).json({
+        error: err.message
       });
     }
 

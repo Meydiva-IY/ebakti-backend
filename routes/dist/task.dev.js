@@ -4,13 +4,29 @@ var express = require('express');
 
 var router = express.Router();
 
-var db = require('../config/db'); // Get all tasks
+var db = require('../config/db'); // Pastikan Anda mengatur koneksi database di sini
+// Get all tasks
 
 
 router.get('/', function (req, res) {
-  db.query('SELECT * FROM Task', function (err, results) {
-    if (err) throw err;
+  db.query('SELECT * FROM task', function (err, results) {
+    if (err) return res.status(500).json({
+      error: err.message
+    });
     res.json(results);
+  });
+}); // Get a specific task by ID
+
+router.get('/:id', function (req, res) {
+  var id = req.params.id;
+  db.query('SELECT * FROM task WHERE task_id = ?', [id], function (err, results) {
+    if (err) return res.status(500).json({
+      error: err.message
+    });
+    if (results.length === 0) return res.status(404).json({
+      message: 'Task not found'
+    });
+    res.json(results[0]);
   });
 }); // Create a new task
 
@@ -19,16 +35,18 @@ router.post('/', function (req, res) {
       title = _req$body.title,
       description = _req$body.description,
       due_date = _req$body.due_date,
-      task_pic = _req$body.task_pic;
-  var sql = 'INSERT INTO Task (title, description, due_date, task_pic) VALUES (?, ?, ?, ?)';
-  db.query(sql, [title, description, due_date, task_pic], function (err, result) {
-    if (err) throw err;
+      task_image = _req$body.task_image;
+  var sql = 'INSERT INTO task (title, description, due_date, task_image) VALUES (?, ?, ?, ?)';
+  db.query(sql, [title, description, due_date, task_image], function (err, result) {
+    if (err) return res.status(500).json({
+      error: err.message
+    });
     res.status(201).json({
-      id: result.insertId,
+      task_id: result.insertId,
       title: title,
       description: description,
       due_date: due_date,
-      task_pic: task_pic
+      task_image: task_image
     });
   });
 }); // Update a task
@@ -39,10 +57,15 @@ router.put('/:id', function (req, res) {
       title = _req$body2.title,
       description = _req$body2.description,
       due_date = _req$body2.due_date,
-      task_pic = _req$body2.task_pic;
-  var sql = 'UPDATE Task SET title = ?, description = ?, due_date = ?, task_pic = ? WHERE task_id = ?';
-  db.query(sql, [title, description, due_date, task_pic, id], function (err, result) {
-    if (err) throw err;
+      task_image = _req$body2.task_image;
+  var sql = 'UPDATE task SET title = ?, description = ?, due_date = ?, task_image = ? WHERE task_id = ?';
+  db.query(sql, [title, description, due_date, task_image, id], function (err, result) {
+    if (err) return res.status(500).json({
+      error: err.message
+    });
+    if (result.affectedRows === 0) return res.status(404).json({
+      message: 'Task not found'
+    });
     res.json({
       message: 'Task updated successfully'
     });
@@ -51,9 +74,14 @@ router.put('/:id', function (req, res) {
 
 router["delete"]('/:id', function (req, res) {
   var id = req.params.id;
-  var sql = 'DELETE FROM Task WHERE task_id = ?';
+  var sql = 'DELETE FROM task WHERE task_id = ?';
   db.query(sql, [id], function (err, result) {
-    if (err) throw err;
+    if (err) return res.status(500).json({
+      error: err.message
+    });
+    if (result.affectedRows === 0) return res.status(404).json({
+      message: 'Task not found'
+    });
     res.json({
       message: 'Task deleted successfully'
     });

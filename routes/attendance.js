@@ -1,43 +1,82 @@
 const express = require('express');
 const router = express.Router();
-const db = require('../config/db');
+const db = require('../config/db'); // Pastikan Anda mengatur koneksi database di sini
 
 // Get all attendance records
 router.get('/', (req, res) => {
-    db.query('SELECT * FROM Attendance', (err, results) => {
-        if (err) throw err;
+    db.query('SELECT * FROM attendance', (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
         res.json(results);
+    });
+});
+
+// Get a specific attendance record by ID
+router.get('/:id', (req, res) => {
+    const { id } = req.params;
+    db.query('SELECT * FROM attendance WHERE attendance_id = ?', [id], (err, results) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        if (results.length === 0) {
+            return res.status(404).json({ message: 'Attendance record not found' });
+        }
+        res.json(results[0]);
     });
 });
 
 // Create a new attendance record
 router.post('/', (req, res) => {
-    const { group_id, period_id, user_id, gambar_selfie, date, location, status } = req.body;
-    const sql = 'INSERT INTO Attendance (group_id, period_id, user_id, gambar_selfie, date, location, status) VALUES (?, ?, ?, ?, ?, ?, ?)';
-    db.query(sql, [group_id, period_id, user_id, gambar_selfie, date, location, status], (err, result) => {
-        if (err) throw err;
-        res.status(201).json({ id: result.insertId, group_id, period_id, user_id, gambar_selfie, date, location, status });
+    const { group_id, period_id, profile_id, selfie_image, date, location, status } = req.body;
+    const sql = 'INSERT INTO attendance (group_id, period_id, profile_id, selfie_image, date, location, status) VALUES (?, ?, ?, ?, ?, ?, ?)';
+    db.query(sql, [group_id, period_id, profile_id, selfie_image, date, location, status], (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        res.status(201).json({
+            attendance_id: result.insertId,
+            group_id,
+            period_id,
+            profile_id,
+            selfie_image,
+            date,
+            location,
+            status,
+            created_at: new Date(),
+            updated_at: new Date()
+        });
     });
 });
 
 // Update an attendance record
 router.put('/:id', (req, res) => {
     const { id } = req.params;
-    const { group_id, period_id, user_id, gambar_selfie, date, location, status } = req.body;
-    const sql = 'UPDATE Attendance SET group_id = ?, period_id = ?, user_id = ?, gambar_selfie = ?, date = ?, location = ?, status = ? WHERE attendance_id = ?';
-    db.query(sql, [group_id, period_id, user_id, gambar_selfie, date, location, status, id], (err, result) => {
-        if (err) throw err;
-        res.json({ message: 'Attendance updated successfully' });
+    const { group_id, period_id, profile_id, selfie_image, date, location, status } = req.body;
+    const sql = 'UPDATE attendance SET group_id = ?, period_id = ?, profile_id = ?, selfie_image = ?, date = ?, location = ?, status = ?, updated_at = CURRENT_TIMESTAMP WHERE attendance_id = ?';
+    db.query(sql, [group_id, period_id, profile_id, selfie_image, date, location, status, id], (err, result) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Attendance record not found' });
+        }
+        res.json({ message: 'Attendance record updated successfully' });
     });
 });
 
 // Delete an attendance record
 router.delete('/:id', (req, res) => {
     const { id } = req.params;
-    const sql = 'DELETE FROM Attendance WHERE attendance_id = ?';
+    const sql = 'DELETE FROM attendance WHERE attendance_id = ?';
     db.query(sql, [id], (err, result) => {
-        if (err) throw err;
-        res.json({ message: 'Attendance deleted successfully' });
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        if (result.affectedRows === 0) {
+            return res.status(404).json({ message: 'Attendance record not found' });
+        }
+        res.json({ message: 'Attendance record deleted successfully' });
     });
 });
 

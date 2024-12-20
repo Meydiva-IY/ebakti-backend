@@ -4,36 +4,44 @@ var express = require('express');
 
 var router = express.Router();
 
-var db = require('../config/db'); // Get all mentors
+var db = require('../config/db'); // Pastikan Anda mengatur koneksi database di sini
+// Get all mentors
 
 
 router.get('/', function (req, res) {
-  db.query('SELECT * FROM Mentor', function (err, results) {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({
-        message: 'Internal Server Error'
-      });
-    }
-
+  db.query('SELECT * FROM mentor', function (err, results) {
+    if (err) return res.status(500).json({
+      error: err.message
+    });
     res.json(results);
+  });
+}); // Get a specific mentor by ID
+
+router.get('/:id', function (req, res) {
+  var id = req.params.id;
+  db.query('SELECT * FROM mentor WHERE mentor_id = ?', [id], function (err, results) {
+    if (err) return res.status(500).json({
+      error: err.message
+    });
+    if (results.length === 0) return res.status(404).json({
+      message: 'Mentor not found'
+    });
+    res.json(results[0]);
   });
 }); // Create a new mentor
 
 router.post('/', function (req, res) {
   var name = req.body.name;
-  var sql = 'INSERT INTO Mentor (name) VALUES (?)';
+  var sql = 'INSERT INTO mentor (name) VALUES (?)';
   db.query(sql, [name], function (err, result) {
-    if (err) {
-      console.error(err);
-      return res.status(400).json({
-        message: 'Error creating mentor'
-      });
-    }
-
+    if (err) return res.status(500).json({
+      error: err.message
+    });
     res.status(201).json({
-      id: result.insertId,
-      name: name
+      mentor_id: result.insertId,
+      name: name,
+      created_at: new Date(),
+      updated_at: new Date()
     });
   });
 }); // Update a mentor
@@ -41,21 +49,14 @@ router.post('/', function (req, res) {
 router.put('/:id', function (req, res) {
   var id = req.params.id;
   var name = req.body.name;
-  var sql = 'UPDATE Mentor SET name = ? WHERE mentor_id = ?';
+  var sql = 'UPDATE mentor SET name = ?, updated_at = CURRENT_TIMESTAMP WHERE mentor_id = ?';
   db.query(sql, [name, id], function (err, result) {
-    if (err) {
-      console.error(err);
-      return res.status(400).json({
-        message: 'Error updating mentor'
-      });
-    }
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({
-        message: 'Mentor not found'
-      });
-    }
-
+    if (err) return res.status(500).json({
+      error: err.message
+    });
+    if (result.affectedRows === 0) return res.status(404).json({
+      message: 'Mentor not found'
+    });
     res.json({
       message: 'Mentor updated successfully'
     });
@@ -64,21 +65,14 @@ router.put('/:id', function (req, res) {
 
 router["delete"]('/:id', function (req, res) {
   var id = req.params.id;
-  var sql = 'DELETE FROM Mentor WHERE mentor_id = ?';
+  var sql = 'DELETE FROM mentor WHERE mentor_id = ?';
   db.query(sql, [id], function (err, result) {
-    if (err) {
-      console.error(err);
-      return res.status(400).json({
-        message: 'Error deleting mentor'
-      });
-    }
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({
-        message: 'Mentor not found'
-      });
-    }
-
+    if (err) return res.status(500).json({
+      error: err.message
+    });
+    if (result.affectedRows === 0) return res.status(404).json({
+      message: 'Mentor not found'
+    });
     res.json({
       message: 'Mentor deleted successfully'
     });
