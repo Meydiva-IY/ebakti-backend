@@ -4,7 +4,10 @@ var express = require('express');
 
 var router = express.Router();
 
-var db = require('../config/db'); // Get all notifications
+var db = require('../config/db');
+
+var pusher = require('../config/pusher'); // Import Pusher configuration
+// Get all notifications
 
 
 router.get('/', function (req, res) {
@@ -21,7 +24,14 @@ router.post('/', function (req, res) {
       is_read = _req$body.is_read;
   var sql = 'INSERT INTO Notification (user_id, message, is_read) VALUES (?, ?, ?)';
   db.query(sql, [user_id, message, is_read], function (err, result) {
-    if (err) throw err;
+    if (err) throw err; // Send notification using Pusher
+
+    pusher.trigger('notifications', 'new-notification', {
+      id: result.insertId,
+      user_id: user_id,
+      message: message,
+      is_read: is_read
+    });
     res.status(201).json({
       id: result.insertId,
       user_id: user_id,
