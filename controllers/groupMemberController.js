@@ -1,4 +1,3 @@
-//groupMemberController.js
 const db = require('../config/db');
 
 const groupMemberController = {
@@ -11,7 +10,6 @@ const groupMemberController = {
       res.status(500).json({ error: error.message });
     }
   },
-
   getByGroup: async (req, res) => {
     try {
       const [members] = await db.query(
@@ -25,7 +23,6 @@ const groupMemberController = {
       res.status(500).json({ error: error.message });
     }
   },
-
   remove: async (req, res) => {
     try {
       await db.query(
@@ -38,3 +35,5 @@ const groupMemberController = {
     }
   }
 };
+
+module.exports = { groupMemberController }; // Ensure this line is present

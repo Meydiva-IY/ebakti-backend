@@ -1,88 +1,21 @@
 "use strict";
 
+// mentorRoutes.js
 var express = require('express');
 
 var router = express.Router();
 
-var db = require('../config/db'); // Get all mentors
+var _require = require('../controllers/mentorController'),
+    mentorController = _require.mentorController; // Pastikan ini benar
 
 
-router.get('/', function (req, res) {
-  db.query('SELECT * FROM Mentor', function (err, results) {
-    if (err) {
-      console.error(err);
-      return res.status(500).json({
-        message: 'Internal Server Error'
-      });
-    }
+var _require2 = require('../middleware/authMiddleware'),
+    authMiddleware = _require2.authMiddleware,
+    adminMiddleware = _require2.adminMiddleware;
 
-    res.json(results);
-  });
-}); // Create a new mentor
-
-router.post('/', function (req, res) {
-  var name = req.body.name;
-  var sql = 'INSERT INTO Mentor (name) VALUES (?)';
-  db.query(sql, [name], function (err, result) {
-    if (err) {
-      console.error(err);
-      return res.status(400).json({
-        message: 'Error creating mentor'
-      });
-    }
-
-    res.status(201).json({
-      id: result.insertId,
-      name: name
-    });
-  });
-}); // Update a mentor
-
-router.put('/:id', function (req, res) {
-  var id = req.params.id;
-  var name = req.body.name;
-  var sql = 'UPDATE Mentor SET name = ? WHERE mentor_id = ?';
-  db.query(sql, [name, id], function (err, result) {
-    if (err) {
-      console.error(err);
-      return res.status(400).json({
-        message: 'Error updating mentor'
-      });
-    }
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({
-        message: 'Mentor not found'
-      });
-    }
-
-    res.json({
-      message: 'Mentor updated successfully'
-    });
-  });
-}); // Delete a mentor
-
-router["delete"]('/:id', function (req, res) {
-  var id = req.params.id;
-  var sql = 'DELETE FROM Mentor WHERE mentor_id = ?';
-  db.query(sql, [id], function (err, result) {
-    if (err) {
-      console.error(err);
-      return res.status(400).json({
-        message: 'Error deleting mentor'
-      });
-    }
-
-    if (result.affectedRows === 0) {
-      return res.status(404).json({
-        message: 'Mentor not found'
-      });
-    }
-
-    res.json({
-      message: 'Mentor deleted successfully'
-    });
-  });
-});
+router.post('/', authMiddleware, adminMiddleware, mentorController.create);
+router.get('/', authMiddleware, mentorController.getAll);
+router.put('/:id', authMiddleware, adminMiddleware, mentorController.update);
+router["delete"]('/:id', authMiddleware, adminMiddleware, mentorController["delete"]);
 module.exports = router;
 //# sourceMappingURL=mentor.dev.js.map

@@ -1,6 +1,7 @@
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
+const multer = require('multer'); // Tambahkan import multer
 
 const app = express();
 const PORT = process.env.PORT || 5000;
@@ -11,7 +12,6 @@ app.use(bodyParser.json());
 
 // Import Routes
 const userRoutes = require('./routes/user');
-const profileRoutes = require('./routes/profile');
 const mentorRoutes = require('./routes/mentor');
 const groupRoutes = require('./routes/group');
 const periodRoutes = require('./routes/period');
@@ -19,14 +19,14 @@ const attendanceRoutes = require('./routes/attendance');
 const medicalHistoryRoutes = require('./routes/medicalHistory');
 const taskRoutes = require('./routes/task');
 const challengeRoutes = require('./routes/challenge');
-const notificationRoutes = require('./routes/notification');
-const groupMemberRoutes = require('./routes/groupMember'); // Import GroupMember routes
-const taskSubmissionRoutes = require('./routes/taskSubmission'); // Import TaskSubmission routes
-const challengeSubmissionRoutes = require('./routes/challengeSubmission'); // Import ChallengeSubmission routes
+const groupMemberRoutes = require('./routes/groupMember');
+const taskSubmissionRoutes = require('./routes/taskSubmission');
+const challengeSubmissionRoutes = require('./routes/challengeSubmission');
+const certificateRoutes = require('./routes/certificate'); // Pastikan rute ini ada
+const evalRoutes = require('./routes/eval'); // Pastikan rute ini ada
 
 // Use Routes
 app.use('/api/users', userRoutes);
-app.use('/api/profiles', profileRoutes);
 app.use('/api/mentors', mentorRoutes);
 app.use('/api/groups', groupRoutes);
 app.use('/api/periods', periodRoutes);
@@ -34,10 +34,11 @@ app.use('/api/attendances', attendanceRoutes);
 app.use('/api/medicalHistories', medicalHistoryRoutes);
 app.use('/api/tasks', taskRoutes);
 app.use('/api/challenges', challengeRoutes);
-app.use('/api/notifications', notificationRoutes);
-app.use('/api/groupMembers', groupMemberRoutes); // Use GroupMember routes
-app.use('/api/taskSubmissions', taskSubmissionRoutes); // Use TaskSubmission routes
-app.use('/api/challengeSubmissions', challengeSubmissionRoutes); // Use ChallengeSubmission routes
+app.use('/api/groupMembers', groupMemberRoutes);
+app.use('/api/taskSubmissions', taskSubmissionRoutes);
+app.use('/api/challengeSubmissions', challengeSubmissionRoutes);
+app.use('/api/certificates', certificateRoutes); // Tambahkan rute untuk certificate
+app.use('/api/evals', evalRoutes); // Tambahkan rute untuk eval
 
 // Start Server
 app.listen(PORT, () => {

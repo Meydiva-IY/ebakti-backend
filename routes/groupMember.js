@@ -1,7 +1,7 @@
 // groupMemberRoutes.js
 const express = require('express');
 const router = express.Router();
-const { groupMemberController } = require('../controllers/groupMemberController');
+const { groupMemberController } = require('../controllers/groupMemberController'); // Ensure this import is correct
 const { authMiddleware, adminMiddleware } = require('../middleware/authMiddleware');
 
 router.post('/', authMiddleware, adminMiddleware, groupMemberController.add);

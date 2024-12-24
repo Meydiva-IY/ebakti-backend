@@ -1,7 +1,9 @@
 // taskRoutes.js
 const express = require('express');
+const multer = require('multer'); // Import multer
+const { authMiddleware, adminMiddleware } = require('../middleware/authMiddleware'); // Import authMiddleware and adminMiddleware
 const router = express.Router();
-const { taskController } = require('../controllers/taskController');
+const { taskController } = require('../controllers/taskController'); // Ensure this import is correct
 const upload = multer({ dest: 'uploads/tasks' });
 
 router.post('/', authMiddleware, adminMiddleware, upload.single('task_image'), taskController.create);
